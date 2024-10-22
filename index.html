@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+
+    
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <!-- Título de la página -->
+        <title>LaNetFlix La mejor búsqueda de películas online | Tu sitio de películas</title>
+
+        <!-- Meta descripción para SEO -->
+        <meta name="description" content="Encuentra las mejores películas online con nuestra plataforma de búsqueda de películas. Ofrecemos reseñas, trailers y la última información sobre tus películas favoritas.">
+    
+        <!-- Meta keywords (ya no es tan relevante para SEO, pero puedes incluirlo) -->
+        <meta name="keywords" content="películas, búsqueda de películas, ver películas online, trailers, reseñas de películas, nuevas películas, cine, estrenos">
+    
+        <!-- Meta para indexación y motores de búsqueda -->
+        <meta name="robots" content="index, follow">
+        <meta name="googlebot" content="index, follow">
+    
+        <!-- Meta datos sociales (Open Graph para Facebook y Twitter Cards) -->
+        <meta property="og:title" content="La mejor búsqueda de películas online">
+        <meta property="og:description" content="Encuentra fácilmente las películas que buscas. Nuestra plataforma ofrece reseñas y trailers de las últimas películas.">
+        <meta property="og:image" content="netflix.jpg">
+        <meta property="og:url" content="URL_DE_TU_SITIO">
+        <meta property="og:type" content="website">
+    
+        <!-- Meta para Twitter -->
+        <meta name="twitter:card" content="summary_large_image">
+        <meta name="twitter:title" content="La mejor búsqueda de películas online">
+        <meta name="twitter:description" content="Encuentra y descubre nuevas películas en nuestra plataforma. Ofrecemos la mejor experiencia de búsqueda de películas.">
+        <meta name="twitter:image" content="netflix.jpg">
+        <meta name="twitter:site" content="@TuCuentaDeTwitter">
+    
+        <!-- Meta para Google Search Console (si tienes una cuenta) -->
+        <meta name="google-site-verification" content="TU_CODIGO_DE_VERIFICACION">
+
+
+    <style>
+        body {
+            background-color: black;
+            color: red;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        h1, h2 {
+            text-align: center;
+        }
+        #videosList {
+            list-style: none;
+            padding: 0;
+        }
+        li {
+            margin: 20px 0;
+            border: 1px solid red;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #222;
+            position: relative;
+        }
+        iframe, video {
+            width: 100%;
+            max-width: 600px;
+            height: 340px;
+            display: block;
+            margin: 0 auto;
+        }
+        .play-button {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: transparent;
+            border: none;
+            cursor: pointer;
+        }
+        .play-button img {
+            width: 60px;
+            height: 60px;
+        }
+    </style>
+</head>
+<body>
+    <h1>
+        LaNetFlix
+    </h1>
+    <section id="videos">
+        <h2>Videos</h2>
+        <ul id="videosList"></ul>
+    </section>
+
+    <script type="module">
+        // Importar las funciones necesarias de Firebase SDK
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
+        import { getDatabase, ref, onChildAdded } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-database.js";
+
+        // Configuración de Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyBejADGp23GHpQqqzdbnjr_CS3tGejkL8g",
+            authDomain: "pelis-d74fe.firebaseapp.com",
+            databaseURL: "https://pelis-d74fe-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "pelis-d74fe",
+            storageBucket: "pelis-d74fe.appspot.com",
+            messagingSenderId: "1009552143647",
+            appId: "1:1009552143647:web:07392e16be26ab13d92c2a",
+            measurementId: "G-G95S8ED6N8"
+        };
+
+        // Inicializar Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const videosRef = ref(db, 'Videos');
+
+        // Función para mostrar videos en la página
+        onChildAdded(videosRef, (snapshot) => {
+            const video = snapshot.val();
+            const videosList = document.getElementById('videosList');
+            const listItem = document.createElement('li');
+            
+            let videoEmbed;
+            let isYouTube = false;
+
+            // Si es una URL de YouTube, crear el iframe
+            if (video.videoUrl.includes("youtube.com") || video.videoUrl.includes("youtu.be")) {
+                const videoId = video.videoUrl.split('v=')[1]?.split('&')[0] || video.videoUrl.split('/').pop();
+                videoEmbed = `<iframe src="https://www.youtube.com/embed/${videoId}" frameborder="0" allowfullscreen></iframe>`;
+                isYouTube = true; // Marcamos que es un video de YouTube
+            } else {
+                videoEmbed = `<video controls><source src="${video.videoUrl}" type="video/mp4">Tu navegador no soporta el elemento de video.</video>`;
+            }
+
+            // Agregar el contenido del video al elemento de la lista
+            listItem.innerHTML = `Título: ${video.titulo}<br>Fecha: ${video.timestamp}<br><br>Descripción: ${video.descripcion}<br>${videoEmbed}`;
+
+            // Crear un botón de imagen de "play"
+            const playButton = document.createElement('button');
+            playButton.classList.add('play-button');
+            playButton.innerHTML = `<img src="play.jpg" alt="Play">`;
+            
+            listItem.appendChild(playButton);
+
+            // Insertar el nuevo elemento al principio de la lista
+            videosList.insertBefore(listItem, videosList.firstChild);
+
+            let clickCount = 0;
+
+            // Manejar el clic en el botón de imagen de "play"
+            playButton.addEventListener('click', () => {
+                clickCount++;
+
+                // Abrir página externa en el primer y segundo clic
+                if (clickCount < 3) {
+                    window.open('https://grairsauz.net/4/8061913', '_blank');
+                }
+
+                // Al tercer clic o al comenzar a reproducir el video, desaparecer el botón
+                if (clickCount === 3 || isYouTube) {
+                    playButton.style.display = 'none';
+                }
+            });
+
+            // Escuchar el evento de reproducción del video
+            if (isYouTube) {
+                const iframe = listItem.querySelector('iframe');
+                iframe.addEventListener('load', () => {
+                    const player = new YT.Player(iframe, {
+                        events: {
+                            'onStateChange': (event) => {
+                                if (event.data === YT.PlayerState.PLAYING) {
+                                    playButton.style.display = 'none'; // Ocultar el botón al reproducir
+                                }
+                            }
+                        }
+                    });
+                });
+            }
+        });
+    </script>
+
+    <script src="https://www.youtube.com/iframe_api"></script>
+</body>
+</html>

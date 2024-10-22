@@ -1,0 +1,61 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f8f8f8;
+    color: #333;
+    margin: 0;
+    padding: 20px;
+}
+
+h2 {
+    color: #c0392b; /* Rojo más oscuro */
+}
+
+#adminVideos, #videos {
+    background-color: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+label {
+    display: block;
+    margin: 10px 0 5px;
+    font-weight: bold;
+}
+
+input[type="text"], input[type="file"], textarea {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+button {
+    background-color: #e74c3c; /* Rojo brillante */
+    color: #fff;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+button:hover {
+    background-color: #c0392b; /* Rojo más oscuro al pasar el mouse */
+}
+
+#videosList {
+    list-style-type: none;
+    padding: 0;
+}
+
+#videosList li {
+    background-color: #f9cbdc; /* Fondo rosado claro */
+    border: 1px solid #e74c3c; /* Borde rojo */
+    border-radius: 4px;
+    padding: 10px;
+    margin-bottom: 10px;
+}

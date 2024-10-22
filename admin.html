@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Administración de Videos</title>
+    <link rel="stylesheet" href="AdminVideos.css">
+</head>
+
+<body>
+    <section id="adminVideos">
+        <h2>Administración de Videos</h2>
+        <form id="adminFormVideos">
+            <label for="tituloVideo">Título del Video:</label>
+            <input type="text" id="tituloVideo" required><br>
+
+            <label for="descripcionVideo">Descripción:</label>
+            <textarea id="descripcionVideo" required></textarea><br>
+
+            <label for="videoFile">Subir Video:</label>
+            <input type="file" id="videoFile" accept="video/*"><br>
+
+            <label for="videoUrl">O ingresar URL del Video:</label>
+            <input type="url" id="videoUrl" placeholder="https://example.com/video.mp4"><br>
+
+            <button type="submit">Agregar Video</button>
+        </form>
+    </section>
+
+    <section id="videos">
+        <h2>Videos</h2>
+        <ul id="videosList"></ul>
+    </section>
+
+    <script type="module">
+        // Importar las funciones necesarias de Firebase SDK
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
+        import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-database.js";
+        import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-storage.js";
+        import { onChildAdded } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-database.js";
+
+        // Configuración de Firebase de tu aplicación web
+        const firebaseConfig = {
+            apiKey: "AIzaSyBejADGp23GHpQqqzdbnjr_CS3tGejkL8g",
+  authDomain: "pelis-d74fe.firebaseapp.com",
+  databaseURL: "https://pelis-d74fe-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "pelis-d74fe",
+  storageBucket: "pelis-d74fe.appspot.com",
+  messagingSenderId: "1009552143647",
+  appId: "1:1009552143647:web:07392e16be26ab13d92c2a",
+  measurementId: "G-G95S8ED6N8"
+        };
+
+        // Inicializar Firebase
+        const app = initializeApp(firebaseConfig);
+
+        // Obtener referencias a la base de datos y al almacenamiento de Firebase
+        const db = getDatabase(app);
+        const storage = getStorage(app);
+
+        // Referencia a la base de datos de Firebase para videos
+        const videosRef = ref(db, 'Videos');
+
+        // Función para agregar un video
+        const adminFormVideos = document.getElementById('adminFormVideos');
+        adminFormVideos.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const titulo = document.getElementById('tituloVideo').value;
+            const descripcion = document.getElementById('descripcionVideo').value;
+            const videoFile = document.getElementById('videoFile').files[0];
+            const videoUrl = document.getElementById('videoUrl').value;
+
+            // Obtener la fecha actual en formato legible
+            const fechaFormateada = new Date().toLocaleString('es-ES', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+
+            try {
+                let videoSrc;
+
+                // Si se sube un archivo, subirlo a Firebase
+                if (videoFile) {
+                    const videoRef = storageRef(storage, `videos/${titulo}`);
+                    const snapshot = await uploadBytes(videoRef, videoFile);
+                    videoSrc = await getDownloadURL(snapshot.ref);
+                } else if (videoUrl) {
+                    // Comprobar si la URL es de YouTube
+                    const youtubeRegex = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.?be)\/.+$/;
+                    if (youtubeRegex.test(videoUrl)) {
+                        videoSrc = videoUrl; // Usar la URL de YouTube directamente
+                    } else {
+                        throw new Error("URL de video no válida. Solo se permiten URLs de YouTube.");
+                    }
+                } else {
+                    throw new Error("Debes subir un archivo de video o ingresar una URL.");
+                }
+
+                // Datos del nuevo video con la URL
+                const nuevoVideo = {
+                    titulo: titulo,
+                    descripcion: descripcion,
+                    videoUrl: videoSrc,
+                    timestamp: fechaFormateada
+                };
+
+                // Crear una referencia nueva automáticamente para el video
+                const nuevasVideosRef = ref(db, `Videos/${fechaFormateada}`);
+
+                // Guardar el nuevo video en Firebase
+                await set(nuevasVideosRef, nuevoVideo);
+
+                // Limpiar los campos del formulario
+                document.getElementById('tituloVideo').value = '';
+                document.getElementById('descripcionVideo').value = '';
+                document.getElementById('videoFile').value = '';
+                document.getElementById('videoUrl').value = '';
+            } catch (error) {
+                console.error("Error al agregar el video:", error);
+            }
+        });
+
+        // Función para mostrar videos en la página
+        onChildAdded(videosRef, (snapshot) => {
+            const video = snapshot.val();
+            const videosList = document.getElementById('videosList');
+            const listItem = document.createElement('li');
+            
+            let videoEmbed;
+
+            // Si es una URL de YouTube, crear el iframe
+            if (video.videoUrl.includes("youtube.com") || video.videoUrl.includes("youtu.be")) {
+                const videoId = video.videoUrl.split('v=')[1]?.split('&')[0] || video.videoUrl.split('/').pop();
+                videoEmbed = `<iframe width="320" height="240" src="https://www.youtube.com/embed/${videoId}" frameborder="0" allowfullscreen></iframe>`;
+            } else {
+                videoEmbed = `<video width="320" height="240" controls><source src="${video.videoUrl}" type="video/mp4">Tu navegador no soporta el elemento de video.</video>`;
+            }
+
+            listItem.innerHTML = `Título: ${video.titulo}<br>Fecha: ${video.timestamp}<br><br>Descripción: ${video.descripcion}<br>${videoEmbed}`;
+            videosList.appendChild(listItem);
+        });
+    </script>
+</body>
+</html>
